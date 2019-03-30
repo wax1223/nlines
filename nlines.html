@@ -1,0 +1,68 @@
+<html>
+<head>
+    <title>N lines</title>
+    <style>
+        .text
+        {
+            font-size: 70px;
+            /* border: 1px solid black; */
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+        .lineText
+        {
+            color: brown;
+        }
+        .distanceText
+        {
+            color:cadetblue;
+        }
+        table, th, td 
+        {
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        tr:nth-child(even) {background-color: #f2f2f2;}
+        tr:nth-child(odd) {background-color: #dcdcdc;}
+    </style>
+    <script>
+        function inputgetPalindrome(e)
+        {
+            if(e.key == 'Enter')
+            {
+                GetPalindrome();
+            }
+        }
+    </script>
+</head>
+<body>
+    <input type="text" id="inputStr" value="123321" />
+    <button onclick="GetPalindrome()">Get Palindrome</button>
+    <div><span>Input String:</span><p id="str"></p></div>
+    <table  id='table'>
+        <tr id="seq"></tr>
+        <tr id="str_new">
+        </tr>
+        <tr id="array">
+            
+        </tr>
+        <tr id="hash_str">
+            
+        </tr>
+        <tr id="hash">
+            
+        </tr>
+        <tr id ="onlyStrseq">
+            
+        </tr>
+        <tr id="onlyStr">
+            
+        </tr>
+        <tr id="only">
+            
+        </tr>
+    </table>
+
+<script src="nlines.js"> </script>
+</body>
+</html>
