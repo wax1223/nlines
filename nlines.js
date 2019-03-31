@@ -68,6 +68,37 @@ function nlinesFold(str)
         }
     }
 }
+
+function nlinesFold2(str, begin, end)
+{
+    var center =  Math.floor((end - begin) / 2) + begin;
+    if(str.length <= 0) 
+    {
+        var a = [];
+        foldSeq.forEach(x => a.push(x));
+        res.push(a);
+        return;
+    }
+    for (var i = 0; i < str.length; i++)
+    {
+        if(isFeasibaleFold(str, i))
+        {
+            var pos = i + begin;
+            foldSeq.push(pos);
+            var newstr = fold(str, i)
+            if(pos < center)
+            {
+                nlinesFold2(newstr, pos + 1, end);
+            }
+            else
+            {
+                nlinesFold2(newstr, begin, pos);
+            }
+            foldSeq.pop();
+        }
+    }
+}
+
 var foldSeq = []
 var res = []
 var last_fold = 0;
@@ -75,30 +106,34 @@ function slove(str)
 {
     foldSeq = []
     res = []
-    nlinesFold(str, 0)
+    // nlinesFold(str, 0)
+    nlinesFold2(str, 0, str.length);
     res.sort(cmp);
     var seqforReading = [];
 
     var result = res[0]
-    var left = 0; 
-    var right = result.length - 1;
-    for (var i = 0; i < result.length; i++)
+    var counter = 1;
+    var table = document.getElementById("outputTable")
+    table.children[1].innerHTML = '';
+    res.map(function(e, i, a)
     {
-        var foldat = result[i];
-        if(Math.floor(foldat / 2) > (right - left) / 2)
-        {
-            //no need to update
-            seqforReading.push(foldat);
-            right = foldat - 1;
+        if(e.length == result.length)
+        { 
+            if(counter >= 50)
+            {
+                if(counter == 50)
+                {
+                    printArr("Too much ...", [], 'text', 'outputTable');
+                }
+            }
+            else 
+            {  
+                printArr("Fold " + counter , e, 'text', 'outputTable');
+            }
+            counter++;
         }
-        else
-        {
-            //need to update
-            seqforReading.push(foldat + left);
-            left = foldat + 1;
-        }
-    }
-    console.log();
+    });
+    table.children[0].textContent = "Output(mimial(" + result.length + ") ways(" + (counter - 1) + "), total(" + res.length + "))";
 }
 
 function strToArr(str)
@@ -111,11 +146,13 @@ function strToArr(str)
     return arr;
 }
 
-function printArr(id , arr, tdclass)
+function printArr(id , arr, tdclass, outputTable)
 {
     tdclass = tdclass || "text";
+    outputTable = outputTable || "arrTable";
+
     var tr = document.getElementById(id);
-    var tableBody = document.getElementById('table').children[0];
+    var tableBody = document.getElementById(outputTable).children[1];
     if(!tr)
     {
         tr = document.createElement("tr");
@@ -124,7 +161,7 @@ function printArr(id , arr, tdclass)
     }   
     tr.innerHTML = '<td>' + id + '</td>' + arr.map(function(elmt, i, arr)
     {
-        return '<td class=' + tdclass + '>' + elmt + '</td>'
+        return '<td class="' + tdclass + '">' + elmt + '</td>'
     }).join(" ");
 }
 
@@ -140,12 +177,7 @@ function output(str, str_new, p)
     var ponlyStrseq = document.getElementById("onlyStrseq");
     var ponlystr = document.getElementById('onlyStr')
     var ponly = document.getElementById('only');
-    pstr.innerHTML = str.join(" ");
-
-    pseq.innerHTML = '<td> </td>' + str_new.map(function(elmt, i, arr)
-    {
-        return '<td>' + i + '</td>'
-    }).join(" ");
+    // pstr.innerHTML = str.join(" ");
 
     pstr_new.innerHTML = "<td>Line and Distance</td>" + str_new.map(function (x) {
         if (x == lineSymbol)
@@ -157,7 +189,19 @@ function output(str, str_new, p)
             return '<td class="text distanceText">' + x + '</td>';
         }
     }).join(" ");
-    parr.innerHTML = "<td>Palindrome array</td>" + p.map(x => '<td class="text">' + x + '</td>').join(" ");
+
+    printArr("Palindrome", p, 'text', 'table');
+    var retArr = []
+    p.map(function(e, i, a)
+    {
+        if(i % 2)
+        {
+            retArr.push(e - 1);
+        }
+    })
+    printArr("Input Array", str, "text lineText");
+    printArr('Palindrome array', retArr);
+    // parr.innerHTML = "<td>Palindrome array</td>" + p.map(x => '<td class="text">' + x + '</td>').join(" ");
     // phash_str.innerHTML = "<td>fold point at lines</td>" + str_new.map(function (x) {
     //     if (x == lineSymbol) {
     //         return '<td class="text lineText">' + x + '</td>';
@@ -175,6 +219,7 @@ function output(str, str_new, p)
     //         return '<td class="text"> </td>';
     //     }
     // }).join(" ")
+    /*
     ponlyStrseq.innerHTML = "<td>Sequence</td>" + str_new.map(function(element, index, arr)
     {
         if (index % 2) 
@@ -205,6 +250,7 @@ function output(str, str_new, p)
             return '<td class="text"> </td>';
         }
     }).join(" ")
+    */
 }
 
 function Manacher(str)
@@ -246,8 +292,7 @@ function Manacher(str)
             mx = i + p[i];
         }
     }
-    output(str, str_new.slice(1), p.slice(1));
-    return p;
+    return [p.slice(1), str_new.slice(1)];
 }
 
 function getPLeftMost(Arr)
@@ -272,7 +317,22 @@ function getPLeftMost(Arr)
 
 function getPRightMost(Arr)
 {
-
+    var retArr = [];
+    Arr.forEach(function(){
+        retArr.push(0);
+    });
+    var palindromeLen = 0;
+    var pright = 0
+    for(var i = 0; i < Arr.length; i++)
+    {
+        palindromeLen = Arr[i];
+        pright = (palindromeLen - 1) / 2;
+        for(var j = i + pright ; j >= i; j--)
+        {
+            retArr[j] = Math.max(1 + pright--, retArr[j]);
+        }
+    }
+    return retArr;
 }
 var PLeftMost;
 
@@ -283,14 +343,37 @@ function GetPalindrome()
     if(inputStr == '') return;
     var strl = strToArr(inputStr);
     var retArr = Manacher(strl);
-    var foldpoints = [];
-    retArr.map(function(value, index, arr)
+
+    var p = retArr[0];
+    var str_new = retArr[1];
+    var seq = [];
+    strl.map(function(e, i, a) 
     {
-        if(index % 2 == 0 && index != 0) foldpoints.push(value - 1);
+        seq.push(i);
+    })
+    printArr("Sequence", seq, ' ');
+    output(strl, str_new, p);
+
+    var foldpoints = [];
+    p.map(function(value, index, arr)
+    {
+        if(index % 2) foldpoints.push(value - 1);
     })
     PLeftMost = getPLeftMost(foldpoints);
+    printArr("PLeftMost", PLeftMost);
     var PRightMost = getPRightMost(foldpoints);
-
+    printArr("PRightMost", PRightMost);
+    // slove(strl);
+}
+function Generate(len) 
+{
+    var textnode = document.getElementById("inputStr");
+    var t = '';
+    while(len--)
+    {
+        t+= (Math.random() > 0.3 ? '1' : '2');
+    }
+    textnode.value = t;
 }
 
 window.addEventListener('DOMContentLoaded', function () {

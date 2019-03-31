@@ -17,13 +17,35 @@
         {
             color:cadetblue;
         }
-        table, th, td 
+        tr, td 
         {
             border: 1px solid #ccc;
             text-align: center;
+            width: 50px;
         }
         tr:nth-child(even) {background-color: #f2f2f2;}
         tr:nth-child(odd) {background-color: #dcdcdc;}
+        input
+        {
+            font-size: 30px;
+            padding-left: 5px;
+        }
+        button
+        {
+            font-size: 30px;
+            border-radius: 5px;
+        }
+        table
+        {
+            position: relative;
+        }
+        table caption
+        {
+            /* position: absolute; */
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 30px;
+        }
     </style>
     <script>
         function inputgetPalindrome(e)
@@ -36,33 +58,38 @@
     </script>
 </head>
 <body>
-    <input type="text" id="inputStr" value="123321" />
+    <input type="text" id="inputStr" value="12112121" />
     <button onclick="GetPalindrome()">Get Palindrome</button>
-    <div><span>Input String:</span><p id="str"></p></div>
+    <button onclick="Generate(10)">Generate Random namber</button>
+    <br />
+    <br />
+
     <table  id='table'>
-        <tr id="seq"></tr>
-        <tr id="str_new">
-        </tr>
-        <tr id="array">
-            
-        </tr>
-        <tr id="hash_str">
-            
-        </tr>
-        <tr id="hash">
-            
-        </tr>
-        <tr id ="onlyStrseq">
-            
-        </tr>
-        <tr id="onlyStr">
-            
-        </tr>
-        <tr id="only">
-            
-        </tr>
+        <!-- <tbody>
+                <caption>Algorithm Ouput</caption>
+        </tbody> -->
+        <caption>Manacher Algorithm Ouput</caption>
+        <tbody>
+            <tr id="str_new"> </tr>
+            <tr id="hash_str"> </tr>
+            <tr id="hash"></tr>
+            <tr id ="onlyStrseq"> </tr>
+            <tr id="onlyStr"> </tr>
+            <tr id="only"> </tr>
+        </tbody>
     </table>
 
+    <table  id='arrTable'>
+        <caption>Array</caption>
+        <tbody>
+        </tbody>
+    </table>
+    <table id="outputTable">
+        <caption>Result</caption>
+        <tbody>
+
+        </tbody>
+    </table>
 <script src="nlines.js"> </script>
 </body>
 </html>

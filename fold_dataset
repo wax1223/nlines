@@ -3,3 +3,33 @@
 121112112112122112, fold 10 times
 12121221121111121211121212
 33221113543254654321332211
+
+121211212121112
+
+121211212121112
+
+123456
+
+121112121211212111  432543322143221211  112123423345122342   fold 7 times.
+
+
+no overlap
+112211221122
+
+overlap inside
+41123211311232115
+
+
+greed fail at right
+overlap right
+112321221  (only left 6, only right 7)
+
+
+greed fail at left
+overlap left
+3111232112 (only left 7, only right 6)
+
+
+greed fail at both side
+overlap two side
+1123212213111232112(only left 12, only right 12, minimal 11) 
