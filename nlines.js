@@ -363,7 +363,12 @@ function GetPalindrome()
     printArr("PLeftMost", PLeftMost);
     var PRightMost = getPRightMost(foldpoints);
     printArr("PRightMost", PRightMost);
-    // slove(strl);
+    PLeftMost[PLeftMost.length - 1] = 0;
+    PRightMost[0] = 0;
+    console.log("Minimal fold times " + sloveByDP(PLeftMost, PRightMost));
+    // console.log("Minimal fold times " + sloveByrecurren(0, strl.length - 1, PLeftMost, PRightMost));
+
+    slove(strl);
 }
 function Generate(len) 
 {
@@ -374,6 +379,72 @@ function Generate(len)
         t+= (Math.random() > 0.3 ? '1' : '2');
     }
     textnode.value = t;
+}
+
+function sloveByDP(pL, pR)
+{
+    var dp = [];
+    for(var i = 0; i < pL.length; i++)
+    {
+        let innerArr = [];
+        for(var j = 0; j < pL.length; j++)
+        {
+            innerArr.push(1e32);
+        }
+        dp.push(innerArr);
+    }
+
+    for(var i = pL.length - 1; i >= 0; i--)
+    {
+        for(var j = i; j < pL.length; j++)
+        {
+            var ni = pL[i] + i;
+            var nj = j - pR[j];
+            var padding = 0;
+            var len = (j - i) + 1;
+            if( len % 2 == 0) padding = 1;
+            var center = i + Math.floor((j - i) / 2);
+            if(i == j)
+            {
+                dp[i][j] = 1;
+            }
+            else if(i > j)
+            {
+                dp[i][j] = 1e32;
+            }
+            else if(j - i == 1)
+            {
+                dp[i][j] = 2;
+            }
+            else if(ni > (center + padding) && nj < center) // both ni, nj invalid!
+            {
+                if((len + 1) == 2)
+                {
+                    dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
+                }
+                dp[i][j] = 1e32;
+            }
+            else if(ni <= (center + padding) && nj < center) // ni valid, nj invalid
+            {
+                dp[i][j] = 1 + dp[ni][j]
+            }
+            else if(ni > (center + padding) && nj >= center) // nj valid, ni invalid!
+            {
+                dp[i][j] = 1 + dp[i][nj];
+            }
+            else                                 // both ni, nj valid!
+            {
+                dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
+            }
+        }
+    }
+    return dp[0][pL.length - 1];
+}
+
+function sloveByrecurren(i, j, pL, pR)
+{
+    if(i > j) return 1e32;
+    return i == j ? 1 : 1 + Math.min(sloveByrecurren(i + pL[i], j, pL, pR), sloveByrecurren(i, j - pR[j], pL, pR));
 }
 
 window.addEventListener('DOMContentLoaded', function () {
