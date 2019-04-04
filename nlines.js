@@ -74,9 +74,13 @@ function nlinesFold2(str, begin, end)
     var center =  Math.floor((end - begin) / 2) + begin;
     if(str.length <= 0) 
     {
-        var a = [];
-        foldSeq.forEach(x => a.push(x));
-        res.push(a);
+        if(foldSeq.length <= shortestPath)
+        {
+            shortestPath = Math.min(shortestPath, foldSeq.length);
+            var a = [];
+            foldSeq.forEach(x => a.push(x));
+            res.push(a);
+        }
         return;
     }
     for (var i = 0; i < str.length; i++)
@@ -102,19 +106,23 @@ function nlinesFold2(str, begin, end)
 var foldSeq = []
 var res = []
 var last_fold = 0;
-function slove(str) 
+var shortestPath = 1000000;
+
+function slove(str, noOuput) 
 {
+    noOuput = noOuput || false;
     foldSeq = []
     res = []
     // nlinesFold(str, 0)
+    shortestPath = 1000000;
     nlinesFold2(str, 0, str.length);
     res.sort(cmp);
+    if(noOuput) return res[0].length;
     var seqforReading = [];
 
     var result = res[0]
     var counter = 1;
-    var table = document.getElementById("outputTable")
-    table.children[1].innerHTML = '';
+    
     res.map(function(e, i, a)
     {
         if(e.length == result.length)
@@ -133,7 +141,9 @@ function slove(str)
             counter++;
         }
     });
+    var table = document.getElementById("outputTable")
     table.children[0].textContent = "Output(mimial(" + result.length + ") ways(" + (counter - 1) + "), total(" + res.length + "))";
+    return res[0].length;
 }
 
 function strToArr(str)
@@ -336,13 +346,22 @@ function getPRightMost(Arr)
 }
 var PLeftMost;
 
-function GetPalindrome() 
+var Lmatrix;
+function GetPalindrome(Generatestr) 
 {
-    var iptstr = document.getElementById('inputStr');
-    var inputStr = iptstr.value;
-    if(inputStr == '') return;
+    var isoutput = false;
+    var inputStr = Generatestr
+    if(!Generatestr)
+    {
+        isoutput = true;
+        var iptstr = document.getElementById('inputStr');
+        inputStr = iptstr.value;
+        if(inputStr == '') return;
+    }
+    
     var strl = strToArr(inputStr);
     var retArr = Manacher(strl);
+
 
     var p = retArr[0];
     var str_new = retArr[1];
@@ -351,39 +370,76 @@ function GetPalindrome()
     {
         seq.push(i);
     })
-    printArr("Sequence", seq, ' ');
-    output(strl, str_new, p);
-
+    
     var foldpoints = [];
     p.map(function(value, index, arr)
     {
         if(index % 2) foldpoints.push(value - 1);
     })
-    PLeftMost = getPLeftMost(foldpoints);
-    printArr("PLeftMost", PLeftMost);
+    var PLeftMost = getPLeftMost(foldpoints);
     var PRightMost = getPRightMost(foldpoints);
-    printArr("PRightMost", PRightMost);
-    PLeftMost[PLeftMost.length - 1] = 0;
-    PRightMost[0] = 0;
-    console.log("Minimal fold times " + sloveByDP(PLeftMost, PRightMost));
+    Lmatrix = LM(foldpoints);
+    
+    var dplength = sloveByDP(PLeftMost, PRightMost, !isoutput);
+    if(isoutput)
+    {
+        printArr("Sequence", seq, ' ');
+        output(strl, str_new, p);
+        printArr("PLeftMost", PLeftMost);
+        printArr("PRightMost", PRightMost);
+        console.log("Minimal fold times " + dplength);
+    }
     // console.log("Minimal fold times " + sloveByrecurren(0, strl.length - 1, PLeftMost, PRightMost));
 
-    slove(strl);
+    var table = document.getElementById("outputTable")
+    table.children[1].innerHTML = '';
+    table.children[0].innerHTML = 'Output';
+    var length = 0;
+    if(strl.length <= 19)
+    {
+        length = slove(strl, !isoutput);
+    }
+    else
+    {
+        table.children[1].innerHTML = '<h3>Too long to slove!</h3>';
+    }
+    // console.log("length = " , length);
+    if(dplength != length) console.log("not equal with", strl);
 }
-function Generate(len) 
+function Generate(len, isret) 
 {
-    var textnode = document.getElementById("inputStr");
-    var t = '';
+    var gstr = '';
     while(len--)
     {
-        t+= (Math.random() > 0.3 ? '1' : '2');
+        var r = Math.random();
+        if(r < 0.4)
+        {
+            gstr += 1;
+        }
+        else /*if( r < 0.7)*/
+        {
+            gstr += 2
+        }
+        // else 
+        // {
+        //     gstr += 3;
+        // }
     }
-    textnode.value = t;
+    if(isret)
+    {
+        return gstr;
+    }
+    else
+    {
+        var textnode = document.getElementById("inputStr");
+        textnode.value = gstr;
+    }
 }
 
-function sloveByDP(pL, pR)
+function sloveByDP(pL, pR, noOuput)
 {
     var dp = [];
+    noOuput = noOuput || false;
     for(var i = 0; i < pL.length; i++)
     {
         let innerArr = [];
@@ -398,12 +454,9 @@ function sloveByDP(pL, pR)
     {
         for(var j = i; j < pL.length; j++)
         {
-            var ni = pL[i] + i;
-            var nj = j - pR[j];
-            var padding = 0;
             var len = (j - i) + 1;
-            if( len % 2 == 0) padding = 1;
-            var center = i + Math.floor((j - i) / 2);
+            var maxStep = Math.ceil(len / 2);
+
             if(i == j)
             {
                 dp[i][j] = 1;
@@ -416,31 +469,104 @@ function sloveByDP(pL, pR)
             {
                 dp[i][j] = 2;
             }
-            else if(ni > (center + padding) && nj < center) // both ni, nj invalid!
-            {
-                if((len + 1) == 2)
-                {
-                    dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
-                }
-                dp[i][j] = 1e32;
-            }
-            else if(ni <= (center + padding) && nj < center) // ni valid, nj invalid
-            {
-                dp[i][j] = 1 + dp[ni][j]
-            }
-            else if(ni > (center + padding) && nj >= center) // nj valid, ni invalid!
-            {
-                dp[i][j] = 1 + dp[i][nj];
-            }
             else                                 // both ni, nj valid!
             {
-                dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
+                if(pL[i] <= maxStep && pR[j] <= maxStep)
+                {
+                    dp[i][j] = 1 + Math.min(dp[pL[i] + i][j], dp[i][j - pR[j]]);
+                }
+                else if(pL[i] <= maxStep)
+                {
+                    //see right array
+                    var possible = pL[j - maxStep * 2 + 2];
+                    if(possible == maxStep)
+                    {
+                        dp[i][j] = 1 + Math.min(dp[pL[i] + i][j], dp[i][j - possible]);
+                    }
+                    else
+                    {
+                        dp[i][j] = 1 + dp[pL[i] + i][j];
+                    }
+                }
+                else if(pR[j] <= maxStep)
+                {
+                    //see left
+                    var possible = pR[i + maxStep * 2 - 2];
+                    if(possible == maxStep)
+                    {
+                        dp[i][j] = 1 + Math.min(dp[i][j - pR[j]], dp[i + possible][j]);
+                    }
+                    else
+                    {
+                        dp[i][j] = 1 + dp[i][j - pR[j]];
+                    }
+                }
+                else
+                {
+                    dp[i][j] = 1e32; // will have any optimal solution but we can get that from the other part of the palindrome.
+                }
             }
         }
+    }
+    if(!noOuput)
+    {
+        outputpath(dp, pL, pR);
     }
     return dp[0][pL.length - 1];
 }
 
+function outputpath(dp, pL, pR)
+{
+    // var resoult = [];
+    var path = [];
+    var i = 0;
+    var j = pL.length - 1;
+    var possible = 0;
+
+    while(i != j && i <= j)
+    {
+        var len = (j - i) + 1;
+        var maxStep = Math.ceil(len / 2);
+        var ni = pL[i] + i;
+        var nj = j - pR[j];
+        if(pL[i] <= maxStep)
+        {
+            //see right array
+            possible = pL[j - maxStep * 2 + 2];
+            if(possible == maxStep)
+            {
+                nj = j - possible;
+            }
+        }
+        else if(pR[j] <= maxStep)
+        {
+            //see left array
+            possible = pR[i + maxStep * 2 - 2];
+            if(possible == maxStep)
+            {
+                ni = i + possible;
+            }
+        }
+        if(j - i == 1)
+        {
+            ni = i + 1;
+            nj = j - 1;
+        }
+
+        if(dp[ni][j] < dp[i][j])
+        {
+            path.push(ni - 1);
+            i = ni;
+        }
+        else
+        {
+            path.push(nj + 1);
+            j = nj;
+        }
+    }
+    path.push(i);
+    console.log(path);
+}
 function sloveByrecurren(i, j, pL, pR)
 {
     if(i > j) return 1e32;
@@ -459,3 +585,36 @@ window.addEventListener('DOMContentLoaded', function () {
 })
 
 
+function testBegin(counter, len)
+{
+    while(counter--)
+    {
+        GetPalindrome(Generate(len, true));
+    }
+}
+
+function LM(palin)
+{
+    ret = [];
+    for(var i = 0; i < palin.length; i++)
+    {
+        let a = [];
+        for(var j = 0; j < palin.length; j++)
+        {
+            a.push(1);
+        }
+        ret.push(a);
+    }
+    var palindromeLen = 0;
+    var pleft = 0
+    for(var i = 0; i < palin.length; i++)
+    {
+        palindromeLen = palin[i];
+        pleft = (palindromeLen - 1) / 2;
+        for(var j = i - pleft ; j <= i; j++)
+        {
+            ret[i][j] = 1 + pleft--;
+        }
+    }
+    return ret;
+}
