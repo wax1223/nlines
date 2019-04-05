@@ -347,6 +347,7 @@ function getPRightMost(Arr)
 var PLeftMost;
 
 var Lmatrix;
+var Rmatrix;
 function GetPalindrome(Generatestr) 
 {
     var isoutput = false;
@@ -378,9 +379,11 @@ function GetPalindrome(Generatestr)
     })
     var PLeftMost = getPLeftMost(foldpoints);
     var PRightMost = getPRightMost(foldpoints);
-    Lmatrix = LM(foldpoints);
-    
+    Lmatrix = GetLeftMatrix(foldpoints);
+    Rmatrix = GetRightMatrix(foldpoints);
+
     var dplength = sloveByDP(PLeftMost, PRightMost, !isoutput);
+    var ndplength = NewDp();
     if(isoutput)
     {
         printArr("Sequence", seq, ' ');
@@ -388,6 +391,7 @@ function GetPalindrome(Generatestr)
         printArr("PLeftMost", PLeftMost);
         printArr("PRightMost", PRightMost);
         console.log("Minimal fold times " + dplength);
+        console.log("Minimal fold times for new DP " + ndplength);
     }
     // console.log("Minimal fold times " + sloveByrecurren(0, strl.length - 1, PLeftMost, PRightMost));
 
@@ -593,28 +597,207 @@ function testBegin(counter, len)
     }
 }
 
-function LM(palin)
+function GetLeftMatrix(palin)
 {
     ret = [];
-    for(var i = 0; i < palin.length; i++)
+    var len = palin.length;
+    for(var i = 0; i < len; i++)
     {
         let a = [];
-        for(var j = 0; j < palin.length; j++)
+        for(var j = 0; j < len; j++)
         {
-            a.push(1);
+            a.push(0);
         }
         ret.push(a);
     }
     var palindromeLen = 0;
     var pleft = 0
-    for(var i = 0; i < palin.length; i++)
+    for(var i = 0; i < len; i++)
     {
         palindromeLen = palin[i];
         pleft = (palindromeLen - 1) / 2;
+        /*
+        if(i + pleft >= len)
+        {
+            palindromeLen = (len - i) * 2 - 1;
+            pleft = (palindromeLen - 1) / 2;
+        } 
         for(var j = i - pleft ; j <= i; j++)
         {
-            ret[i][j] = 1 + pleft--;
+            next = palindromeLen - 1 - c++;
+            ret[j][next] = 1 + pleft--;
+        }*/
+        for(var j = i - pleft ; j <= i; j++)
+        {
+            var currentlen;
+            /*
+            if((palindromeLen - 1) / 2 <= (i - j))
+            {
+                currentlen = palindromeLen - 1 - c++;
+            }
+            else
+            {
+                currentlen = (i - j) * 2 - 1 - c++;
+            }
+            */
+            currentlen = (i - j) * 2 + 1
+            ret[j][currentlen] = 1 + pleft--;
         }
     }
+
+    //file table
+    for(var i = 0; i < len; i++)
+    {
+        for(var j = 0; j < len - i; j++)
+        {
+            if(j == 0)
+            {
+                ret[i][j] = 1;
+            }
+            if(ret[i][j] == 0)
+            {
+                if((j + 1) % 2 == 0) //even
+                {
+                    ret[i][j] = ret[i][j - 1];
+                }
+                else
+                {
+                    if(j + 1 < len)
+                    {
+                        ret[i][j] = ret[i][j + 1] == 0 ? ret[i][j - 1] : ret[i][j + 1];
+                    }
+                    else
+                    {
+                        ret[i][j] = ret[i][j - 1];
+                    }
+                }
+            }
+        }
+    }
+    console.log(ret);
     return ret;
+}
+
+
+function GetRightMatrix(palin)
+{
+    ret = [];
+    var len = palin.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(0);
+        }
+        ret.push(a);
+    }
+
+    var palindromeLen = 0;
+    var pRigth = 0
+    for(var i = 0; i < len; i++)
+    {
+        palindromeLen = palin[i];
+        pRigth = (palindromeLen - 1) / 2;
+        var c = 0;
+        /*
+        if(i + pRigth >= len)
+        {
+            palindromeLen = (len - i) * 2 - 1;
+            pRigth = (palindromeLen - 1) / 2;
+        }            
+        for(var j = i + pRigth ; j >= i; j--)
+        {
+            next = palindromeLen - 1 - c++;
+            ret[j][next] = 1 + pRigth--;
+        }*/
+        for(var j = i + pRigth ; j >= i; j--)
+        {
+            var currentlen;
+            /*
+            var next;
+            if((palindromeLen - 1) / 2 <= (j - i))
+            {
+                next = palindromeLen - 1 - c++;
+            }
+            else
+            {
+                next = (j - i) * 2 - 1 - c++;
+            }
+
+            ret[j][next] = 1 + pRigth--;
+            */
+           currentlen = (j - i) * 2 + 1
+           ret[j][currentlen] = 1 + pRigth--;
+        }
+    }
+
+    //file table
+    for(var i = 0; i < len; i++)
+    {
+        for(var j = 0; j <= i; j++)
+        {
+            if(j == 0)
+            {
+                ret[i][j] = 1;
+            }
+            if(ret[i][j] == 0)
+            {
+                if((j + 1) % 2 == 0) //even
+                {
+                    ret[i][j] = ret[i][j - 1];
+                }
+                else
+                {
+                    if(j + 1 < len)
+                    {
+                        ret[i][j] = ret[i][j + 1] == 0 ? ret[i][j - 1] : ret[i][j + 1];
+                    }
+                    else
+                    {
+                        ret[i][j] = ret[i][j - 1];
+                    }
+                }
+            }
+        }
+    }
+    console.log(ret);
+    return ret;
+}
+
+function NewDp()
+{
+    var dp = [];
+    var arrlen = Lmatrix.length;
+    for(var i = 0; i < arrlen; i++)
+    {
+        let innerArr = [];
+        for(var j = 0; j < arrlen; j++)
+        {
+            innerArr.push(1e32);
+        }
+        dp.push(innerArr);
+    }
+    for(var i = arrlen - 1; i >= 0; i--)
+    {
+        for(var j = i; j < arrlen; j++)
+        {
+            if(i == j)
+            {
+                dp[i][j] = 1;
+            }
+            else if(i > j)
+            {
+                dp[i][j] = 1e32;
+            }
+            else
+            {
+                var len = j - i;
+                var ni = i + Lmatrix[i][len];
+                var nj = j - Rmatrix[j][len];
+                dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
+            }
+        }   
+    }
+    return dp[0][arrlen - 1];
 }
