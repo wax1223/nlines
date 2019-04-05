@@ -383,7 +383,7 @@ function GetPalindrome(Generatestr)
     Rmatrix = GetRightMatrix(foldpoints);
 
     var dplength = sloveByDP(PLeftMost, PRightMost, !isoutput);
-    var ndplength = NewDp();
+    var ndplength = dp(Lmatrix, Rmatrix);
     if(isoutput)
     {
         printArr("Sequence", seq, ' ');
@@ -597,8 +597,9 @@ function testBegin(counter, len)
     }
 }
 
-function GetLeftMatrix(palin)
+function GetLeftMatrix(palin, noOuput)
 {
+    noOuput = noOuput || false;
     ret = [];
     var len = palin.length;
     for(var i = 0; i < len; i++)
@@ -616,31 +617,9 @@ function GetLeftMatrix(palin)
     {
         palindromeLen = palin[i];
         pleft = (palindromeLen - 1) / 2;
-        /*
-        if(i + pleft >= len)
-        {
-            palindromeLen = (len - i) * 2 - 1;
-            pleft = (palindromeLen - 1) / 2;
-        } 
         for(var j = i - pleft ; j <= i; j++)
         {
-            next = palindromeLen - 1 - c++;
-            ret[j][next] = 1 + pleft--;
-        }*/
-        for(var j = i - pleft ; j <= i; j++)
-        {
-            var currentlen;
-            /*
-            if((palindromeLen - 1) / 2 <= (i - j))
-            {
-                currentlen = palindromeLen - 1 - c++;
-            }
-            else
-            {
-                currentlen = (i - j) * 2 - 1 - c++;
-            }
-            */
-            currentlen = (i - j) * 2 + 1
+            var currentlen = (i - j) * 2 + 1 - 1; // store at len - 1
             ret[j][currentlen] = 1 + pleft--;
         }
     }
@@ -674,13 +653,14 @@ function GetLeftMatrix(palin)
             }
         }
     }
-    console.log(ret);
+    if(!noOuput) console.log(ret);
     return ret;
 }
 
 
-function GetRightMatrix(palin)
+function GetRightMatrix(palin, noOuput)
 {
+    noOuput = noOuput || false
     ret = [];
     var len = palin.length;
     for(var i = 0; i < len; i++)
@@ -692,43 +672,17 @@ function GetRightMatrix(palin)
         }
         ret.push(a);
     }
-
     var palindromeLen = 0;
     var pRigth = 0
     for(var i = 0; i < len; i++)
     {
         palindromeLen = palin[i];
         pRigth = (palindromeLen - 1) / 2;
-        var c = 0;
-        /*
-        if(i + pRigth >= len)
-        {
-            palindromeLen = (len - i) * 2 - 1;
-            pRigth = (palindromeLen - 1) / 2;
-        }            
-        for(var j = i + pRigth ; j >= i; j--)
-        {
-            next = palindromeLen - 1 - c++;
-            ret[j][next] = 1 + pRigth--;
-        }*/
-        for(var j = i + pRigth ; j >= i; j--)
-        {
-            var currentlen;
-            /*
-            var next;
-            if((palindromeLen - 1) / 2 <= (j - i))
-            {
-                next = palindromeLen - 1 - c++;
-            }
-            else
-            {
-                next = (j - i) * 2 - 1 - c++;
-            }
 
-            ret[j][next] = 1 + pRigth--;
-            */
-           currentlen = (j - i) * 2 + 1
-           ret[j][currentlen] = 1 + pRigth--;
+        for(var j = i + pRigth ; j >= i; j--)
+        {
+            var currentlen = (j - i) * 2 + 1 - 1; //store at len - 1
+            ret[j][currentlen] = 1 + pRigth--;
         }
     }
 
@@ -751,7 +705,7 @@ function GetRightMatrix(palin)
                 {
                     if(j + 1 < len)
                     {
-                        ret[i][j] = ret[i][j + 1] == 0 ? ret[i][j - 1] : ret[i][j + 1];
+                        ret[i][j] = ret[i][j + 1] != 0 ? ret[i][j + 1] : ret[i][j - 1];
                     }
                     else
                     {
@@ -761,14 +715,15 @@ function GetRightMatrix(palin)
             }
         }
     }
-    console.log(ret);
+    if(!noOuput) console.log(ret);
     return ret;
 }
 
-function NewDp()
+function dp(LLmatrix, RRmatrix, noOuput)
 {
+    noOuput = noOuput || false;
     var dp = [];
-    var arrlen = Lmatrix.length;
+    var arrlen = LLmatrix.length;
     for(var i = 0; i < arrlen; i++)
     {
         let innerArr = [];
@@ -785,6 +740,7 @@ function NewDp()
             if(i == j)
             {
                 dp[i][j] = 1;
+                // path.push( i - 1);
             }
             else if(i > j)
             {
@@ -793,11 +749,75 @@ function NewDp()
             else
             {
                 var len = j - i;
-                var ni = i + Lmatrix[i][len];
-                var nj = j - Rmatrix[j][len];
+                var ni = i + LLmatrix[i][len];
+                var nj = j - RRmatrix[j][len];
                 dp[i][j] = 1 + Math.min(dp[ni][j], dp[i][nj]);
             }
         }   
     }
+    if(!noOuput)
+    {
+        console.log("New dp path: ");
+        outputNewdp(dp, LLmatrix, RRmatrix)
+    }
     return dp[0][arrlen - 1];
+}
+
+function outputNewdp(dptable, ll, rr)
+{
+    var i = 0;
+    var j = ll.length - 1;
+    var path = [];
+    while(i != j && i <= j)
+    {
+        var len = j - i;
+        var ni = i + ll[i][len];
+        var nj = j - rr[j][len];
+        if(dptable[ni][j] <= dptable[i][nj])
+        {
+            path.push(ni - 1);
+            i = ni;
+        }
+        else
+        {
+            path.push(nj + 1);
+            j = nj;
+        }
+    }
+    //last one
+    path.push(i);
+    console.log(path);
+    return path; 
+}
+
+function testBeginDp(strlen, times)
+{
+    let noOuput = true;
+    var counter = times;
+    while(counter --)
+    {
+        strl = Generate(strlen, true);
+        strToArr
+        let retArr = Manacher(strToArr(strl));
+
+        let p = retArr[0];
+        let foldpoints = [];
+        p.map(function(value, index, arr)
+        {
+            if(index % 2) foldpoints.push(value - 1);
+        })
+        let PLeftMost = getPLeftMost(foldpoints);
+        let PRightMost = getPRightMost(foldpoints);
+        let LLmatrix = GetLeftMatrix(foldpoints, noOuput);
+        let RRmatrix = GetRightMatrix(foldpoints, noOuput);
+
+        let dplength = sloveByDP(PLeftMost, PRightMost, noOuput);
+        let ndplength = dp(LLmatrix, RRmatrix, noOuput);
+        if(dplength != ndplength)
+        {
+            console.log("Not Equal OldDP(" + dplength + ") NewDP(" + ndplength + ")")
+            console.log("With :" + strl);
+        }
+    }
+    console.log("Test " + times + " passed");
 }
