@@ -379,10 +379,10 @@ function GetPalindrome(Generatestr)
     })
     var PLeftMost = getPLeftMost(foldpoints);
     var PRightMost = getPRightMost(foldpoints);
-    Lmatrix = GetLeftMatrix(foldpoints);
-    Rmatrix = GetRightMatrix(foldpoints);
+    Lmatrix = GetLeftMatrix(foldpoints, true);
+    Rmatrix = GetRightMatrix(foldpoints, true);
 
-    var dplength = sloveByDP(PLeftMost, PRightMost, !isoutput);
+    var dplength = sloveByDP(PLeftMost, PRightMost, !isoutput, true);
     var ndplength = dp(Lmatrix, Rmatrix);
     if(isoutput)
     {
@@ -390,8 +390,8 @@ function GetPalindrome(Generatestr)
         output(strl, str_new, p);
         printArr("PLeftMost", PLeftMost);
         printArr("PRightMost", PRightMost);
-        console.log("Minimal fold times " + dplength);
-        console.log("Minimal fold times for new DP " + ndplength);
+        // console.log("Minimal fold times " + dplength);
+        console.log("Minimal fold times for DP " + ndplength);
     }
     // console.log("Minimal fold times " + sloveByrecurren(0, strl.length - 1, PLeftMost, PRightMost));
 
@@ -416,17 +416,21 @@ function Generate(len, isret)
     while(len--)
     {
         var r = Math.random();
-        if(r < 0.4)
+        if(r < 0.6)
         {
             gstr += 1;
         }
-        else /*if( r < 0.7)*/
+        else
         {
             gstr += 2
         }
-        // else 
+        // else if(r < 0.80)
         // {
         //     gstr += 3;
+        // }
+        // else
+        // {
+        //     gstr += 4;
         // }
     }
     if(isret)
@@ -443,7 +447,7 @@ function Generate(len, isret)
 function sloveByDP(pL, pR, noOuput)
 {
     var dp = [];
-    noOuput = noOuput || false;
+    noOuput = noOuput || true;
     for(var i = 0; i < pL.length; i++)
     {
         let innerArr = [];
@@ -629,27 +633,9 @@ function GetLeftMatrix(palin, noOuput)
     {
         for(var j = 0; j < len - i; j++)
         {
-            if(j == 0)
-            {
-                ret[i][j] = 1;
-            }
             if(ret[i][j] == 0)
             {
-                if((j + 1) % 2 == 0) //even
-                {
-                    ret[i][j] = ret[i][j - 1];
-                }
-                else
-                {
-                    if(j + 1 < len)
-                    {
-                        ret[i][j] = ret[i][j + 1] == 0 ? ret[i][j - 1] : ret[i][j + 1];
-                    }
-                    else
-                    {
-                        ret[i][j] = ret[i][j - 1];
-                    }
-                }
+                ret[i][j] = ret[i][j - 1];
             }
         }
     }
@@ -691,27 +677,9 @@ function GetRightMatrix(palin, noOuput)
     {
         for(var j = 0; j <= i; j++)
         {
-            if(j == 0)
-            {
-                ret[i][j] = 1;
-            }
             if(ret[i][j] == 0)
             {
-                if((j + 1) % 2 == 0) //even
-                {
-                    ret[i][j] = ret[i][j - 1];
-                }
-                else
-                {
-                    if(j + 1 < len)
-                    {
-                        ret[i][j] = ret[i][j + 1] != 0 ? ret[i][j + 1] : ret[i][j - 1];
-                    }
-                    else
-                    {
-                        ret[i][j] = ret[i][j - 1];
-                    }
-                }
+                ret[i][j] = ret[i][j - 1];
             }
         }
     }
