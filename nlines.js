@@ -582,12 +582,13 @@ function sloveByrecurren(i, j, pL, pR)
 }
 
 window.addEventListener('DOMContentLoaded', function () {
-    GetPalindrome();
+    // GetPalindrome();
     document.getElementById("inputStr").addEventListener("keypress", function(e)
     {
         if(e.key == 'Enter')
         {
-            GetPalindrome();
+            // GetPalindrome();
+            NewSolve();
         }
     })
 })
@@ -788,4 +789,253 @@ function testBeginDp(strlen, times)
         }
     }
     console.log("Test " + times + " passed");
+}
+
+
+//11222122222121
+function NewSolve()
+{
+    var iptstr = document.getElementById('inputStr');
+    inputStr = iptstr.value;
+    if(inputStr == '') return;
+    
+    var strl = strToArr(inputStr);
+    var retArr = Manacher(strl);
+    var p = retArr[0];
+    var foldpoints = [];
+    p.map(function(value, index)
+    {
+        if(index % 2) foldpoints.push(value - 1);
+    })
+    var LLINE = GetLLine(foldpoints);
+    var RLINE = GetRLine(foldpoints);
+
+    var FL = GetFL(LLINE)
+    var FR = GetFR(RLINE)
+
+    var times = SF(FL, FR);
+    console.log(`Minimal times ${times}`);
+}
+
+
+function GetLLine(Palins)
+{
+    var ret = [];
+    var len = Palins.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(0);
+        }
+        ret.push(a);
+    }
+
+    for(var i = 0; i < len; i++)
+    {
+        for(var curL = 0; i + 2 * curL < len; curL++)
+        {
+            if(curL == 0)
+            {
+                if(i + 2 * curL < len)
+                {
+                    ret[i][curL] = 1;
+                }
+                continue;
+            }
+            
+            if(Palins[i + curL] > 2 * curL)
+            {
+                ret[i][curL] = 1;
+            }
+        }
+    }
+    console.log("LLineTable: ")
+    console.table(ret);
+    return ret;
+}
+
+function GetRLine(Palins)
+{
+    var ret = [];
+    var len = Palins.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(0);
+        }
+        ret.push(a);
+    }
+
+    for(var j = len - 1; j >= 0; j--)
+    {
+        for(var curL = 0; j - 2 * curL >= 0; curL++)
+        {
+            if(curL == 0)
+            {
+                if(j - 2 * curL >= 0)
+                {
+                    ret[j][curL] = 1;
+                }
+                continue;
+            }
+            
+            if(Palins[j - curL] > 2 * curL)
+            {
+                ret[j][curL] = 1;
+            }
+        }
+    }
+    console.log("RLineTable: ")
+    console.table(ret);
+    return ret;
+}
+
+function GetFL(lline)
+{
+    var ret = [];
+    var len = lline.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(0);
+        }
+        ret.push(a);
+    }
+
+    var len = lline.length;
+    for(var i = 0; i < len; i++)
+    {
+        for(var j = i; j < len; j++)
+        {
+            if(i == j)
+            {
+                ret[i][j] = i;
+                continue;
+            }
+            
+            m = Math.floor((i + j) / 2)
+            if(lline[i][m - i] == 0)
+            {
+                ret[i][j] = ret[i][j - 1];
+            }
+            else
+            {
+                ret[i][j] = m;
+            }
+        }
+    }
+    console.log("FLTable: ")
+    console.table(ret);
+    return ret;
+}
+
+function GetFR(rline)
+{
+    var ret = [];
+    var len = rline.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(0);
+        }
+        ret.push(a);
+    }
+
+    var len = rline.length;
+    for(var i = len - 1; i >= 0; i--)
+    {
+        for(var j = i; j < len; j++)
+        {
+            if(i == j)
+            {
+                ret[i][j] = i;
+                continue;
+            }
+            
+            m = Math.ceil((i + j) / 2)
+            if(rline[j][j - m] == 0)
+            {
+                ret[i][j] = ret[i + 1][j];
+            }
+            else
+            {
+                ret[i][j] = m;
+            }
+        }
+    }
+    console.log("FRTable: ")
+    console.table(ret);
+    return ret;
+}
+
+function SF(fl, fr)
+{
+    var ret = [];
+    var len = fr.length;
+    for(var i = 0; i < len; i++)
+    {
+        let a = [];
+        for(var j = 0; j < len; j++)
+        {
+            a.push(1e32);
+        }
+        ret.push(a);
+    }
+
+    for(var i = len - 1; i >= 0; i--)
+    {
+        for(var j = i; j < len; j++)
+        {
+            if(i == j || (j - i) == 1)
+            {
+                ret[i][j] = 0;
+            }
+            else
+            {
+                var ni = fl[i][j] + 1
+                var nj = fr[i][j] - 1
+                var lefttimes = ret[ni][j];
+                var righttimes = ret[i][nj];
+
+                ret[i][j] = 1 + Math.min(lefttimes, righttimes);
+            }
+        }
+    }
+    console.log("sfTable: ")
+    console.table(ret);
+    GetPath(ret, fl, fr);
+    return ret[0][len - 1];
+}
+
+function GetPath(dp, fl, fr)
+{
+    var i = 0;
+    var j = dp.length - 1;
+    var path = [];
+    while(i != j && i < j)
+    {
+        var ni = fl[i][j] + 1;
+        var nj = fr[i][j] - 1;
+        if(dp[ni][j] <= dp[i][nj])
+        {
+            path.push(ni - 1);
+            i = ni;
+        }
+        else
+        {
+            path.push(nj + 1);
+            j = nj;
+        }
+    }
+    console.log("Path: ");
+    console.log(path);
+    return path; 
 }
